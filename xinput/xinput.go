@@ -2,31 +2,37 @@ package xinput
 
 import (
 	"fmt"
-	"os"
 	"os/exec"
-	"syscall"
+
+	tea "github.com/charmbracelet/bubbletea"
 )
+
+type ClickMsg int
+type CommandError int
 
 func XinputInstalled() bool {
 	_, err := exec.LookPath("xinput")
 	return err == nil
 }
 
-func WaitForClick() {
+func XinputRunning() bool {
+	pid, err := exec.Command("pidof", "xinput").Output()
+	return err == nil && len(pid) > 0
+}
+
+func WaitForClick() tea.Msg {
 	commandString := fmt.Sprintf("xinput --test-xi2 --root | grep 'RawButtonPress' -m 1")
 	command := exec.Command("bash", "-c", commandString)
-	command.Stderr = os.Stdout
-	command.Env = os.Environ()
-
-	// Kill the command if the parent process dies
-	command.SysProcAttr = &syscall.SysProcAttr{
-		Pdeathsig: syscall.SIGTERM,
-	}
 
 	err := command.Run()
 
 	if err != nil {
-		command.Cancel()
-		os.Exit(1)
+		return CommandError(1)
+	} else {
+		return ClickMsg(1)
 	}
+}
+
+func QuitXinput() {
+	exec.Command("pkill", "xinput").Run()
 }

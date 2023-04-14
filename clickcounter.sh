@@ -40,4 +40,4 @@ do
         redraw
         count=$new_count
     fi
-done
+done 

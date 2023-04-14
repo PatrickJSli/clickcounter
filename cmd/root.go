@@ -22,6 +22,11 @@ func Root() *cobra.Command {
 				os.Exit(1)
 			}
 
+			if xinput.XinputRunning() {
+				fmt.Println("xinput is already running. Please close xinput and try again.")
+				os.Exit(1)
+			}
+
 			bubble.Run()
 
 		},
